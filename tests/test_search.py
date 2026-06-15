@@ -25,3 +25,16 @@ def test_no_spec_flag_excludes_speculative():
 def test_estimate_weight_gb():
     assert estimate_weight_gb(8.0, Quant.FP16) == 16.0
     assert estimate_weight_gb(8.0, Quant.INT4_AWQ) == 4.0
+
+
+def test_quants_filter_restricts_schemes_but_keeps_reference():
+    space = build_search_space(num_params_b=8.0, vram_gb=0.0, quants=[Quant.FP8])
+    assert ServeConfig() in space  # fp16 reference always present
+    non_ref = [c for c in space if not c.is_reference]
+    assert non_ref and all(c.quant == Quant.FP8 for c in non_ref)
+
+
+def test_max_configs_caps_total_and_keeps_reference_first():
+    space = build_search_space(num_params_b=8.0, vram_gb=0.0, max_configs=3)
+    assert len(space) == 3
+    assert space[0].is_reference

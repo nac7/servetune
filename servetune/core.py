@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from .backends.base import Backend, RunResult
-from .config import ServeConfig
+from .config import Quant, ServeConfig
 from .fidelity import compare_to_reference
 from .pareto import Candidate, pareto_frontier, select_best
 from .search import build_search_space
@@ -48,15 +48,21 @@ def optimize(
     max_degradation: float = 0.03,
     include_spec: bool = True,
     vram_gb: float = 0.0,
+    quants: Optional[List[Quant]] = None,
+    max_configs: Optional[int] = None,
 ) -> OptimizeResult:
     """Search serving configs for `model`, gate each by fidelity, return the best.
 
     The reference (full-precision) run is executed once; every candidate's outputs
     are compared against it. `best` is the fastest fidelity-passing config, or None
     if every faster config degrades quality beyond `max_degradation`.
+
+    `quants` / `max_configs` narrow the search (e.g. a cheap smoke run on a cloud GPU).
     """
     prompts = prompts or DEFAULT_PROMPTS
-    space = build_search_space(num_params_b, vram_gb, include_spec)
+    space = build_search_space(
+        num_params_b, vram_gb, include_spec, quants=quants, max_configs=max_configs
+    )
 
     reference = backend.run(ServeConfig(), prompts, max_new_tokens)
 

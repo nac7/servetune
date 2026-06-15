@@ -54,6 +54,27 @@ The headline: the most aggressive int4 config *looks* fastest but **fails the fi
 gate** (silent quality loss); ServeTune instead recommends the fastest config that's
 verifiably faithful.
 
+## Run on a real GPU (vLLM)
+
+On a CUDA machine (Linux; ~24 GB VRAM for a 7–8B fp16 reference):
+
+```bash
+pip install -e ".[vllm]"
+
+# Cheap smoke run first (fp16 reference + a few fp8 configs):
+servetune optimize Qwen/Qwen2.5-7B-Instruct --params 7 --backend vllm \
+  --quants fp16,fp8 --max-configs 4 --report report.html
+
+# Full sweep:
+servetune optimize Qwen/Qwen2.5-7B-Instruct --params 7 --backend vllm --report report.html
+```
+
+Each config runs in its own subprocess so the GPU is fully reclaimed between candidates
+(and a single OOM/bad config can't abort the sweep). Decoding is greedy (`temperature=0`)
+so token agreement against the reference is meaningful. `int4-awq` configs require a
+pre-quantized AWQ checkpoint as the model id. Speculative-decoding configs take a draft model
+via `--draft-model`.
+
 ## How it works
 
 ```
@@ -67,9 +88,10 @@ optimize(model)
 
 ## Status
 
-v0.1 — core pipeline + mock backend + CLI + tests. vLLM backend execution is the next
-milestone (scaffolded in `servetune/backends/vllm_backend.py`). See the roadmap in the
-project plan.
+v0.1 — core pipeline + mock backend + **vLLM backend** + CLI + tests (22 passing).
+The vLLM path runs each config in an isolated subprocess and is validated on a real GPU via
+`SERVETUNE_GPU_TEST=1`. Next: real 7–8B benchmark numbers, PyPI release, then a llama.cpp
+backend (v0.2).
 
 ## License
 
