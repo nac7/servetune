@@ -1,5 +1,8 @@
 # ServeTune
 
+[![CI](https://github.com/nac7/servetune/actions/workflows/ci.yml/badge.svg)](https://github.com/nac7/servetune/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 **Auto-tuning + fidelity-gated local LLM serving.**
 
 You point ServeTune at a model and your GPU; it searches serving configurations
