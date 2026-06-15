@@ -54,6 +54,30 @@ The headline: the most aggressive int4 config *looks* fastest but **fails the fi
 gate** (silent quality loss); ServeTune instead recommends the fastest config that's
 verifiably faithful.
 
+## Benchmarks
+
+> ⏳ Numbers below are placeholders — they'll be filled from the first GPU validation run
+> (RTX 4090, Qwen2.5-7B-Instruct). Reproduce them yourself with the command shown.
+
+**Setup:** RTX 4090 (24 GB, Ada) · Qwen2.5-7B-Instruct · 10 probe prompts × 64 tokens · gate ≥ 97% greedy-token agreement
+
+| config | tok/s | speedup | agreement | CI low | gate |
+|---|---|---|---|---|---|
+| fp16 (reference) | _TBD_ | 1.00× | 100% | — | PASS |
+| fp8 | _TBD_ | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
+| fp8 + kv:fp8 | _TBD_ | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
+| fp8 + spec | _TBD_ | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
+
+```bash
+servetune optimize Qwen/Qwen2.5-7B-Instruct --params 7 --backend vllm --report report.html
+```
+
+**Key takeaway:** _TBD from results — e.g. "fp8 delivers ~N× throughput with no measurable
+quality change, while the fp8 KV-cache variant drops below the fidelity gate."_
+
+> Ran it on your own GPU/model? Open a PR or issue with your `report.html` — we're collecting
+> a community results table.
+
 ## Run on a real GPU (vLLM)
 
 On a CUDA machine (Linux; ~24 GB VRAM for a 7–8B fp16 reference):
@@ -90,8 +114,8 @@ optimize(model)
 
 v0.1 — core pipeline + mock backend + **vLLM backend** + CLI + tests (22 passing).
 The vLLM path runs each config in an isolated subprocess and is validated on a real GPU via
-`SERVETUNE_GPU_TEST=1`. Next: real 7–8B benchmark numbers, PyPI release, then a llama.cpp
-backend (v0.2).
+`SERVETUNE_GPU_TEST=1`. Next: real 7–8B benchmark numbers, PyPI release, richer fidelity
+metrics, then a llama.cpp backend. See [ROADMAP.md](ROADMAP.md).
 
 ## License
 
